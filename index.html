@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Моя визитка</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Righteous&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        /* Preloader стили */
+        .preloader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #111;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease;
+        }
+        
+        .preloader-logo {
+            font-family: 'Righteous', cursive;
+            font-size: 3rem;
+            color: #fff;
+            margin-bottom: 30px;
+            text-shadow: 0 0 10px rgba(255,255,255,0.3);
+            letter-spacing: 2px;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeIn 0.8s ease-out 0.3s forwards;
+        }
+        
+        .preloader-progress {
+            width: 200px;
+            height: 4px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 2px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        
+        .preloader-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b6b, #ff8e8e);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        .preloader-percent {
+            color: rgba(255,255,255,0.7);
+            font-size: 0.9rem;
+        }
+        
+        .preloader-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255,255,255,0.1);
+            border-top-color: #ff6b6b;
+            border-radius: 50%;
+            margin-top: 20px;
+            animation: spin 1s linear infinite;
+            opacity: 0;
+            transition: opacity 0.3s ease 0.5s;
+        }
+        
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+            color: white;
+        }
+        
+        .bg-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            opacity: 0;
+            transition: opacity 1.5s ease-in-out;
+            z-index: -2;
+        }
+        
+        .bg-image.active {
+            opacity: 1;
+        }
+        
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0) 100%);
+            z-index: -1;
+        }
+        
+        .container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.8s ease, transform 0.8s ease;
+        }
+        
+        .container.loaded {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .music-progress {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            max-width: 500px;
+            height: 3px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        
+        .music-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b6b, #ff8e8e);
+            width: 0%;
+            transition: width 0.1s linear;
+        }
+        
+        .now-playing {
+            position: absolute;
+            top: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            max-width: 500px;
+            font-size: 0.9rem;
+            color: rgba(255,255,255,0.7);
+            font-style: italic;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            text-align: center;
+        }
+        
+        .nickname {
+            font-family: 'Righteous', cursive;
+            font-size: 4rem;
+            margin-bottom: 20px;
+            color: #fff;
+            text-shadow: 0 0 10px rgba(255,255,255,0.3);
+            letter-spacing: 2px;
+            margin-top: 70px;
+        }
+        
+        .description {
+            max-width: 500px;
+            margin-bottom: 40px;
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: rgba(255,255,255,0.8);
+            padding: 0 20px;
+        }
+        
+        .social-links {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .social-link {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+            color: white;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .social-link:hover {
+            transform: translateY(-5px);
+            background: rgba(255,255,255,0.2);
+        }
+        
+        .donate-btn {
+            padding: 12px 30px;
+            background: linear-gradient(45deg, #ff6b6b, #ff8e8e);
+            color: white;
+            border: none;
+            border-radius: 30px;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-bottom: 40px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .donate-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
+        }
+        
+        footer {
+            position: absolute;
+            bottom: 20px;
+            font-size: 0.9rem;
+            color: rgba(255,255,255,0.7);
+        }
+        
+        .heart {
+            color: #ff6b6b;
+            animation: pulse 1.5s infinite;
+            display: inline-block;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+            100% { transform: scale(1); }
+        }
+        
+        .music-player {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.2rem;
+            color: white;
+            cursor: pointer;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255,255,255,0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .music-player:hover {
+            background: rgba(255,255,255,0.2);
+        }
+        
+        .visualizer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.2;
+        }
+        
+        .visualizer-bar {
+            position: absolute;
+            bottom: 0;
+            width: 4px;
+            background: white;
+            transition: height 0.1s ease;
+        }
+        
+        .autoplay-notice {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            background: rgba(0,0,0,0.7);
+            padding: 10px 15px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            backdrop-filter: blur(5px);
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+            pointer-events: none;
+        }
+        
+        .autoplay-notice.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .photo-credit {
+            position: absolute;
+            bottom: 60px;
+            left: 20px;
+            font-size: 0.7rem;
+            color: rgba(255,255,255,0.5);
+            background: rgba(0,0,0,0.3);
+            padding: 3px 8px;
+            border-radius: 10px;
+            backdrop-filter: blur(5px);
+        }
+    </style>
+</head>
+<body>
+    <!-- Preloader -->
+    <div class="preloader" id="preloader">
+        <div class="preloader-logo">OVERWATCH</div>
+        <div class="preloader-progress">
+            <div class="preloader-progress-bar" id="preloaderProgress"></div>
+        </div>
+        <div class="preloader-percent" id="preloaderPercent">0%</div>
+        <div class="preloader-spinner" id="preloaderSpinner"></div>
+    </div>
+    
+    <!-- Уведомление об автовоспроизведении -->
+    <div class="autoplay-notice" id="autoplayNotice">
+        Нажмите для воспроизведения музыки
+    </div>
+    
+    <!-- Фоновые изображения -->
+    <div class="bg-image" id="bgImage1"></div>
+    <div class="bg-image" id="bgImage2"></div>
+    
+    <div class="visualizer" id="visualizer"></div>
+    
+    <div class="container" id="mainContainer">
+        <div class="music-progress">
+            <div class="music-progress-bar" id="progressBar"></div>
+        </div>
+        
+        <div class="now-playing" id="nowPlaying">Трек не выбран</div>
+        
+        <h1 class="nickname">OVERWATCH</h1>
+        <div class="description">
+            Привет! Я создаю крутые проекты и делюсь своими мыслями в соцсетях. Давайте сотрудничать!
+        </div>
+        
+        <div class="social-links">
+            <a href="#" class="social-link" target="_blank"><i class="fab fa-telegram"></i></a>
+            <a href="#" class="social-link" target="_blank"><i class="fab fa-vk"></i></a>
+            <a href="#" class="social-link" target="_blank"><i class="fab fa-instagram"></i></a>
+        </div>
+        
+        <button class="donate-btn">
+            <i class="fas fa-dollar-sign"></i> Поддержать
+        </button>
+        
+        <footer>
+            Made with <span class="heart"><i class="fas fa-heart"></i></span> by me
+        </footer>
+    </div>
+    
+    <div class="music-player" id="musicPlayer">
+        <i class="fas fa-play" id="playIcon"></i>
+    </div>
+    
+    <audio id="audioPlayer" loop>
+        <!-- Источники будут добавлены динамически -->
+    </audio>
+    
+   <script>
+// Глобальные переменные
+let isPlaying = false;
+let currentTrackIndex = 0;
+let currentPhotoIndex = 0;
+let audioContext, analyser, source;
+
+// Плейлист
+const playlist = {
+    'music/1.mp3': 'theqwix - Worthless',
+    'music/2.mp3': 'NIKOHA - Armin',
+    'music/3.mp3': 'shizocxz - Character', 
+    'music/4.mp3': 'MELERY - End of Life'
+};
+
+// Локальные фоны (просто URL без авторства)
+const localBackgrounds = [
+    'bg/1.jpg',
+    'bg/2.jpg',
+    'bg/3.jpg',
+    'bg/4.jpg',
+    'bg/5.jpg'
+];
+
+// Получаем элементы DOM
+const preloader = document.getElementById('preloader');
+const preloaderProgress = document.getElementById('preloaderProgress');
+const preloaderPercent = document.getElementById('preloaderPercent');
+const preloaderSpinner = document.getElementById('preloaderSpinner');
+const mainContainer = document.getElementById('mainContainer');
+const autoplayNotice = document.getElementById('autoplayNotice');
+const nowPlaying = document.getElementById('nowPlaying');
+const bgImage1 = document.getElementById('bgImage1');
+const bgImage2 = document.getElementById('bgImage2');
+const audioPlayer = document.getElementById('audioPlayer');
+const musicPlayer = document.getElementById('musicPlayer');
+const playIcon = document.getElementById('playIcon');
+const progressBar = document.getElementById('progressBar');
+const visualizer = document.getElementById('visualizer');
+
+// Преобразуем плейлист в массив
+const playlistArray = Object.keys(playlist).map(file => ({
+    file: file,
+    name: playlist[file]
+}));
+
+// Показываем спиннер загрузки
+setTimeout(() => {
+    preloaderSpinner.style.opacity = '1';
+}, 500);
+
+// Инициализация фона
+// Инициализация фона
+function initBackground() {
+    // Сначала скрываем оба фона
+    bgImage1.style.opacity = '0';
+    bgImage2.style.opacity = '0';
+    
+    // Устанавливаем первый фон
+    setBackground(currentPhotoIndex);
+    
+    // Меняем фон каждые 10 секунд
+    setInterval(() => {
+        currentPhotoIndex = (currentPhotoIndex + 1) % localBackgrounds.length;
+        setBackground(currentPhotoIndex);
+    }, 10000);
+}
+
+// Установка фона (правильное попеременное переключение)
+function setBackground(index) {
+    const photoUrl = localBackgrounds[index];
+    
+    // Определяем какой фон активен в данный момент
+    const currentActive = bgImage1.style.opacity === '1' ? bgImage1 : bgImage2;
+    const nextActive = currentActive === bgImage1 ? bgImage2 : bgImage1;
+    
+    // Устанавливаем новый фон для неактивного элемента
+    nextActive.style.backgroundImage = `url(${photoUrl})`;
+    
+    // Плавное переключение
+    currentActive.style.opacity = '0';
+    nextActive.style.opacity = '1';
+}
+
+// ... (остальной код остается без изменений)
+
+// Предзагрузка ресурсов
+function preloadResources() {
+    let loaded = 0;
+    const totalResources = playlistArray.length + localBackgrounds.length;
+    
+    // Загружаем музыку
+    playlistArray.forEach(track => {
+        const xhr = new XMLHttpRequest();
+        xhr.open('GET', track.file, true);
+        xhr.onload = () => {
+            loaded++;
+            updatePreloaderProgress(loaded, totalResources);
+        };
+        xhr.onerror = () => {
+            console.error('Ошибка загрузки:', track.file);
+            loaded++;
+            updatePreloaderProgress(loaded, totalResources);
+        };
+        xhr.send();
+    });
+    
+    // Загружаем фоны
+    localBackgrounds.forEach(bgUrl => {
+        const img = new Image();
+        img.src = bgUrl;
+        img.onload = () => {
+            loaded++;
+            updatePreloaderProgress(loaded, totalResources);
+        };
+        img.onerror = () => {
+            console.error('Ошибка загрузки фона:', bgUrl);
+            loaded++;
+            updatePreloaderProgress(loaded, totalResources);
+        };
+    });
+    
+    // Инициализируем фон после начала загрузки
+    initBackground();
+}
+
+// Обновление прогресса загрузки
+function updatePreloaderProgress(loaded, total) {
+    const progress = Math.floor((loaded / total) * 100);
+    preloaderProgress.style.width = `${progress}%`;
+    preloaderPercent.textContent = `${progress}%`;
+    
+    if (loaded === total) {
+        setTimeout(() => {
+            preloader.style.opacity = '0';
+            setTimeout(() => {
+                preloader.style.display = 'none';
+                mainContainer.classList.add('loaded');
+                initPlayer();
+                tryAutoplay();
+            }, 500);
+        }, 500);
+    }
+}
+
+// Инициализация плеера
+function initPlayer() {
+    setTrack(currentTrackIndex);
+    
+    // Автоматическое переключение трека по окончании
+    audioPlayer.addEventListener('ended', () => {
+        nextTrack();
+        if (isPlaying) {
+            audioPlayer.play().catch(console.error);
+        }
+    });
+}
+
+// Установка трека
+function setTrack(index) {
+    currentTrackIndex = index % playlistArray.length;
+    const track = playlistArray[currentTrackIndex];
+    
+    audioPlayer.src = track.file;
+    nowPlaying.textContent = track.name;
+    
+    if (isPlaying) {
+        audioPlayer.play().catch(error => {
+            console.error('Ошибка воспроизведения:', error);
+        });
+    }
+}
+
+// Следующий трек
+function nextTrack() {
+    setTrack(currentTrackIndex + 1);
+}
+
+// Попытка автовоспроизведения
+function tryAutoplay() {
+    autoplayNotice.classList.add('show');
+    
+    const playPromise = audioPlayer.play();
+    
+    if (playPromise !== undefined) {
+        playPromise.then(() => {
+            isPlaying = true;
+            playIcon.classList.replace('fa-play', 'fa-pause');
+            autoplayNotice.classList.remove('show');
+        }).catch(() => {
+            showAutoplayNotice();
+        });
+    }
+}
+
+// Показать уведомление
+function showAutoplayNotice() {
+    autoplayNotice.classList.add('show');
+    setTimeout(() => {
+        autoplayNotice.classList.remove('show');
+    }, 3000);
+}
+
+// Обработчик клика по плееру
+musicPlayer.addEventListener('click', () => {
+    if (isPlaying) {
+        audioPlayer.pause();
+        playIcon.classList.replace('fa-pause', 'fa-play');
+        isPlaying = false;
+    } else {
+        audioPlayer.play()
+            .then(() => {
+                playIcon.classList.replace('fa-play', 'fa-pause');
+                isPlaying = true;
+            })
+            .catch(error => {
+                console.error('Ошибка:', error);
+                showAutoplayNotice();
+            });
+    }
+});
+
+// Обновление прогресс-бара
+audioPlayer.addEventListener('timeupdate', () => {
+    const progress = (audioPlayer.currentTime / audioPlayer.duration) * 100;
+    progressBar.style.width = `${progress}%`;
+});
+
+// Клик по прогресс-бару
+document.querySelector('.music-progress').addEventListener('click', (e) => {
+    const rect = e.target.getBoundingClientRect();
+    const seekTime = (e.clientX - rect.left) / rect.width * audioPlayer.duration;
+    audioPlayer.currentTime = seekTime;
+});
+
+// Инициализация визуализатора
+function initVisualizer() {
+    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    analyser = audioContext.createAnalyser();
+    source = audioContext.createMediaElementSource(audioPlayer);
+    
+    source.connect(analyser);
+    analyser.connect(audioContext.destination);
+    analyser.fftSize = 64;
+    
+    // Создаем полоски визуализатора
+    for (let i = 0; i < 20; i++) {
+        const bar = document.createElement('div');
+        bar.className = 'visualizer-bar';
+        bar.style.left = `${i * 5}%`;
+        visualizer.appendChild(bar);
+    }
+    
+    const bars = document.querySelectorAll('.visualizer-bar');
+    const bufferLength = analyser.frequencyBinCount;
+    const dataArray = new Uint8Array(bufferLength);
+    
+    function updateVisualizer() {
+        requestAnimationFrame(updateVisualizer);
+        analyser.getByteFrequencyData(dataArray);
+        
+        bars.forEach((bar, i) => {
+            const height = dataArray[Math.floor(i * 2.5)] / 2;
+            bar.style.height = `${height}px`;
+            bar.style.opacity = height > 0 ? '0.8' : '0';
+        });
+    }
+    
+    audioPlayer.addEventListener('play', () => {
+        audioContext.resume().then(updateVisualizer);
+    });
+}
+
+// Запуск при загрузке страницы
+window.addEventListener('load', () => {
+    preloadResources();
+    initVisualizer();
+});
+</script>
+</body>
+</html>
