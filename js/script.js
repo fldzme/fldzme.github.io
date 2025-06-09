@@ -13,13 +13,7 @@ const playlist = {
 };
 
 // Локальные фоны
-const localBackgrounds = [
-    'bg/1.jpg',
-    'bg/2.jpg',
-    'bg/3.jpg',
-    'bg/4.jpg',
-    'bg/5.jpg'
-];
+const localBackgrounds =  Array.from({length: 12}, (_, i) => `bg/${i+1}.jpg`);
 
 // Получаем элементы DOM
 const preloader = document.getElementById('preloader');
@@ -264,6 +258,18 @@ function initVisualizer() {
         audioContext.resume().then(updateVisualizer);
     });
 }
+
+const titleParts = ["fldzme", "fldz me", "f l d z m e"];
+const icons = ["⚡", "❤️", "✨", "🌟"];
+let currentIndex = 0;
+
+function animateTitle() {
+    const icon = icons[Math.floor(Math.random() * icons.length)];
+    document.title = `${icon} ${titleParts[currentIndex]} ${icon}`;
+    currentIndex = (currentIndex + 1) % titleParts.length;
+}
+
+setInterval(animateTitle, 1000);
 
 // Назначение обработчиков событий
 playBtn.addEventListener('click', togglePlay);
