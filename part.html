@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Объемные частицы со свечением</title>
+    <style>
+        body { 
+            margin: 0; 
+            overflow: hidden; 
+            background: #000;
+        }
+        canvas { 
+            display: block; 
+        }
+    </style>
+</head>
+<body>
+    <!-- Three.js и дополнительные компоненты -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/postprocessing/EffectComposer.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/postprocessing/RenderPass.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/postprocessing/UnrealBloomPass.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/shaders/CopyShader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/shaders/LuminosityHighPassShader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/postprocessing/ShaderPass.js"></script>
+
+    <script>
+        // Инициализация сцены
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        document.body.appendChild(renderer.domElement);
+
+        // Параметры частиц
+        const PARTICLE_COUNT = 2000;
+        const SPREAD_RADIUS = 200;
+        const PARTICLE_SIZE = 2;
+
+        // Создаем геометрию для частиц (сфера)
+        const geometry = new THREE.SphereGeometry(PARTICLE_SIZE, 12, 12);
+
+        // Материал с добавленным свечением
+        const material = new THREE.MeshPhongMaterial({
+            color: 0xffffff,
+            specular: 0x111111,
+            shininess: 30,
+            flatShading: true
+        });
+
+        // Создаем InstancedMesh
+        const particles = new THREE.InstancedMesh(geometry, material, PARTICLE_COUNT);
+        scene.add(particles);
+
+        // Массив для хранения цветов и позиций
+        const colors = [];
+        const dummy = new THREE.Object3D();
+        const color = new THREE.Color();
+
+        // Инициализация частиц
+        for (let i = 0; i < PARTICLE_COUNT; i++) {
+            // Позиция
+            const theta = Math.random() * Math.PI * 2;
+            const phi = Math.acos(2 * Math.random() - 1);
+            const radius = SPREAD_RADIUS * Math.cbrt(Math.random());
+
+            dummy.position.set(
+                radius * Math.sin(phi) * Math.cos(theta),
+                radius * Math.sin(phi) * Math.sin(theta),
+                radius * Math.cos(phi)
+            );
+
+            // Масштаб (разные размеры частиц)
+            const scale = 0.5 + Math.random() * 1.5;
+            dummy.scale.set(scale, scale, scale);
+
+            // Вращение
+            dummy.rotation.set(
+                Math.random() * Math.PI,
+                Math.random() * Math.PI,
+                Math.random() * Math.PI
+            );
+
+            dummy.updateMatrix();
+            particles.setMatrixAt(i, dummy.matrix);
+
+            // Цвет (случайный яркий цвет)
+            color.setHSL(
+                Math.random(), // Hue
+                0.9, // Saturation
+                0.7 // Lightness
+            );
+            colors.push(color.r, color.g, color.b);
+        }
+
+        // Устанавливаем цвета для InstancedMesh
+        particles.geometry.setAttribute('color', new THREE.InstancedBufferAttribute(new Float32Array(colors), 3));
+
+        // Включаем использование цветов экземпляров
+        material.vertexColors = true;
+
+        // Освещение
+        const ambientLight = new THREE.AmbientLight(0x404040);
+        scene.add(ambientLight);
+
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+        directionalLight.position.set(1, 1, 1);
+        scene.add(directionalLight);
+
+        // Настройка эффекта свечения (Bloom)
+        const renderScene = new THREE.RenderPass(scene, camera);
+        const bloomPass = new THREE.UnrealBloomPass(
+            new THREE.Vector2(window.innerWidth, window.innerHeight),
+            1.5, // strength
+            0.4, // radius
+            0.85 // threshold
+        );
+
+        const composer = new THREE.EffectComposer(renderer);
+        composer.addPass(renderScene);
+        composer.addPass(bloomPass);
+
+        // Позиция камеры
+        camera.position.z = SPREAD_RADIUS * 1.5;
+
+        // Анимация
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // Вращение всех частиц
+            particles.rotation.x += 0.001;
+            particles.rotation.y += 0.002;
+
+            // Обновляем матрицы для InstancedMesh
+            particles.instanceMatrix.needsUpdate = true;
+
+            // Рендеринг с эффектом bloom
+            composer.render();
+        }
+
+        animate();
+
+        // Обработка изменения размера окна
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            composer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>

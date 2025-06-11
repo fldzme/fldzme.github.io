@@ -11,12 +11,18 @@
 <body>
     <!-- Preloader -->
     <div class="preloader" id="preloader">
-        <div class="preloader-logo">fldzme</div>
-        <div class="preloader-progress">
-            <div class="preloader-progress-bar" id="preloaderProgress"></div>
+        <!-- Контейнер для частиц фона -->
+        <div class="particles-background" id="particlesContainer"></div>
+        
+        <!-- Контент прелоадера -->
+        <div class="preloader-content">
+            <div class="preloader-logo">fldzme</div>
+            <div class="preloader-progress">
+                <div class="preloader-progress-bar" id="preloaderProgress"></div>
+            </div>
+            <div class="preloader-percent" id="preloaderPercent">0%</div>
+            <div class="preloader-spinner" id="preloaderSpinner"></div>
         </div>
-        <div class="preloader-percent" id="preloaderPercent">0%</div>
-        <div class="preloader-spinner" id="preloaderSpinner"></div>
     </div>
     
     <!-- Уведомление об автовоспроизведении -->
@@ -39,14 +45,13 @@
         <div class="social-links">
             <a href="https://t.me/iopqwe16" class="social-link" target="_blank"><i class="fab fa-telegram"></i></a>
             <a href="https://vk.com/fleydz" class="social-link" target="_blank"><i class="fab fa-vk"></i></a>
-        <!--    <a href="#" class="social-link" target="_blank"><i class="fab fa-instagram"></i></a>-->
         </div>
         
         <a href="https://tips.yandex.ru/guest/payment/7803660" class="donate-btn">
             <i class="fas fa-dollar-sign"></i> Поддержать
         </a>
 
-        <!--Центральный плеер -->
+        <!-- Центральный плеер -->
         <div class="music-player-container">
             <div class="now-playing" id="nowPlaying">Трек не выбран</div>
             <div class="music-progress">

@@ -260,6 +260,7 @@ body::before {
     display: flex;
     align-items: center;
     gap: 10px;
+    text-decoration: none;
 }
 
 .donate-btn:hover {

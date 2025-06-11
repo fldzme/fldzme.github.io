@@ -13,7 +13,7 @@ const playlist = {
 };
 
 // Локальные фоны
-const localBackgrounds =  Array.from({length: 12}, (_, i) => `bg/${i+1}.jpg`);
+const localBackgrounds =  Array.from({length: 11}, (_, i) => `bg/${i+1}.jpg`);
 
 // Получаем элементы DOM
 const preloader = document.getElementById('preloader');
@@ -69,22 +69,7 @@ function setBackground(index) {
 // Предзагрузка ресурсов
 function preloadResources() {
     let loaded = 0;
-    const totalResources = playlistArray.length + localBackgrounds.length;
-    
-    playlistArray.forEach(track => {
-        const xhr = new XMLHttpRequest();
-        xhr.open('GET', track.file, true);
-        xhr.onload = () => {
-            loaded++;
-            updatePreloaderProgress(loaded, totalResources);
-        };
-        xhr.onerror = () => {
-            console.error('Ошибка загрузки:', track.file);
-            loaded++;
-            updatePreloaderProgress(loaded, totalResources);
-        };
-        xhr.send();
-    });
+    const totalResources = localBackgrounds.length;
     
     localBackgrounds.forEach(bgUrl => {
         const img = new Image();
